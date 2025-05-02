@@ -34,10 +34,10 @@ export const basicAnimation = () => {
 };
 
 /**
- * @param {number} [until=15]
+ * @param {number} [until=2]
  * @returns {void}
  */
-export const openAnimation = (until = 15) => {
+export const openAnimation = (until = 2) => {
     if (!window.confetti) {
         return;
     }
@@ -46,7 +46,7 @@ export const openAnimation = (until = 15) => {
     const animationEnd = Date.now() + duration;
 
     const heart = heartShape();
-    const colors = ['#FFC0CB', '#FF1493', '#C71585'];
+    const colors = ['#FFC0CB', '#C71585'];
 
     const randomInRange = (min, max) => {
         return Math.random() * (max - min) + min;
@@ -55,23 +55,25 @@ export const openAnimation = (until = 15) => {
     const frame = () => {
         const timeLeft = animationEnd - Date.now();
 
-        colors.forEach((color) => {
-            window.confetti({
-                particleCount: 1,
-                startVelocity: 0,
-                ticks: Math.max(50, 75 * (timeLeft / duration)),
-                origin: {
-                    x: Math.random(),
-                    y: Math.abs(Math.random() - (timeLeft / duration)),
-                },
-                zIndex: 1057,
-                colors: [color],
-                shapes: [heart],
-                drift: randomInRange(-0.5, 0.5),
-                gravity: randomInRange(0.5, 1),
-                scalar: randomInRange(0.5, 1),
+        if (Math.random() < 0.5) {
+            colors.forEach((color) => {
+                window.confetti({
+                    particleCount: 1,
+                    startVelocity: 0,
+                    ticks: Math.max(50, 75 * (timeLeft / duration)),
+                    origin: {
+                        x: Math.random(),
+                        y: Math.abs(Math.random() - (timeLeft / duration)),
+                    },
+                    zIndex: 1057,
+                    colors: [color],
+                    shapes: [heart],
+                    drift: randomInRange(-0.5, 0.5),
+                    gravity: randomInRange(0.5, 1),
+                    scalar: randomInRange(0.5, 1),
+                });
             });
-        });
+        }
 
         if (timeLeft > 0) {
             requestAnimationFrame(frame);
