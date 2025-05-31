@@ -548,7 +548,7 @@
         </button>
 
         <!-- Audio Button -->
-        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3" aria-label="Change audio" data-offline-disabled="false">
+        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3" aria-label="Change audio">
             <i class="fa-solid fa-circle-pause spin-button"></i>
         </button>
     </div>
@@ -587,6 +587,79 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize audio element
+            const audioElement = document.createElement('audio');
+            audioElement.setAttribute('src', './assets/music/sound.mp3');
+            audioElement.setAttribute('loop', 'true');
+            document.body.appendChild(audioElement);
+
+            // Audio Context for iOS
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioContext = new AudioContext();
+
+            // Music button functionality
+            const musicButton = document.getElementById('button-music');
+            const musicIcon = musicButton.querySelector('i');
+            let isPlaying = false;
+
+            function toggleMusic() {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+
+                if (isPlaying) {
+                    audioElement.pause();
+                    musicIcon.classList.remove('fa-circle-pause');
+                    musicIcon.classList.add('fa-circle-play');
+                } else {
+                    audioElement.play().catch(function(error) {
+                        console.log("Audio playback failed:", error);
+                    });
+                    musicIcon.classList.remove('fa-circle-play');
+                    musicIcon.classList.add('fa-circle-pause');
+                }
+                isPlaying = !isPlaying;
+            }
+
+            // Add click event listener to music button
+            musicButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                toggleMusic();
+            });
+
+            // Handle invitation open
+            const openInvitationBtn = document.querySelector('[onclick="undangan.guest.open(this)"]');
+            if (openInvitationBtn) {
+                openInvitationBtn.addEventListener('click', function() {
+                    // Start playing music when invitation is opened
+                    if (!isPlaying) {
+                        toggleMusic();
+                    }
+                });
+            }
+
+            // iOS requires user interaction to play audio
+            document.body.addEventListener('touchstart', function() {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            }, { once: true });
+
+            // Handle page visibility change
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden && isPlaying) {
+                    audioElement.pause();
+                } else if (!document.hidden && isPlaying) {
+                    audioElement.play().catch(function(error) {
+                        console.log("Audio playback failed:", error);
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
