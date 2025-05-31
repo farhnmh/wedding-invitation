@@ -589,53 +589,113 @@
     </div>
 
     <script>
+        // Detect iOS device
+        function isIOS() {
+            return [
+                'iPad Simulator',
+                'iPhone Simulator',
+                'iPod Simulator',
+                'iPad',
+                'iPhone',
+                'iPod'
+            ].includes(navigator.platform)
+            // iPad on iOS 13 detection
+            || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+        }
+
+        // Detect iPhone specifically
+        function isIPhone() {
+            return isIOS() && !navigator.userAgent.includes('iPad');
+        }
+
         // Global audio control
         function toggleAudio(button) {
             const audio = document.querySelector('audio');
             const icon = button.querySelector('i');
             
-            if (audio) {
-                if (audio.paused) {
+            if (!audio) return;
+
+            if (audio.paused) {
+                // Special handling for iPhone
+                if (isIPhone()) {
+                    // Create and play a temporary audio context to unlock audio
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    const audioContext = new AudioContext();
+                    const source = audioContext.createBufferSource();
+                    source.connect(audioContext.destination);
+                    source.start(0);
+                    source.stop(0.1);
+
+                    // Then try to play the actual audio
+                    setTimeout(() => {
+                        audio.play().then(() => {
+                            icon.classList.remove('fa-circle-play');
+                            icon.classList.add('fa-circle-pause');
+                        }).catch((error) => {
+                            console.log("Audio play failed:", error);
+                            // If failed, try to play on next user interaction
+                            document.body.addEventListener('touchend', function playOnTouch() {
+                                audio.play();
+                                document.body.removeEventListener('touchend', playOnTouch);
+                            }, { once: true });
+                        });
+                    }, 100);
+                } else {
+                    // Normal play for other devices
                     audio.play().then(() => {
                         icon.classList.remove('fa-circle-play');
                         icon.classList.add('fa-circle-pause');
-                    }).catch((error) => {
-                        console.log("Audio play failed:", error);
                     });
-                } else {
-                    audio.pause();
-                    icon.classList.remove('fa-circle-pause');
-                    icon.classList.add('fa-circle-play');
                 }
+            } else {
+                audio.pause();
+                icon.classList.remove('fa-circle-pause');
+                icon.classList.add('fa-circle-play');
             }
         }
 
-        // iOS audio initialization
+        // Initialize audio handling
         document.addEventListener('DOMContentLoaded', function() {
             const audio = document.querySelector('audio');
-            if (audio) {
-                // Enable audio for iOS
-                document.body.addEventListener('touchstart', function() {
-                    audio.play().then(() => {
-                        audio.pause(); // Immediately pause but now enabled for iOS
-                    }).catch((error) => {
-                        console.log("iOS audio initialization failed:", error);
+            if (!audio) return;
+
+            // For iPhone, we need to enable audio on first interaction
+            if (isIPhone()) {
+                const button = document.getElementById('button-music');
+                
+                // Remove any existing click handlers
+                button.removeAttribute('onclick');
+                
+                // Add our new click handler
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleAudio(this);
+                }, true);
+
+                // Enable audio on first touch
+                document.body.addEventListener('touchstart', function initAudio() {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    const audioContext = new AudioContext();
+                    audioContext.resume().then(() => {
+                        console.log('AudioContext enabled on iPhone');
                     });
+                    document.body.removeEventListener('touchstart', initAudio);
                 }, { once: true });
-
-                // Update button state when audio state changes
-                audio.addEventListener('play', function() {
-                    const icon = document.querySelector('#button-music i');
-                    icon.classList.remove('fa-circle-play');
-                    icon.classList.add('fa-circle-pause');
-                });
-
-                audio.addEventListener('pause', function() {
-                    const icon = document.querySelector('#button-music i');
-                    icon.classList.remove('fa-circle-pause');
-                    icon.classList.add('fa-circle-play');
-                });
             }
+
+            // Update button state when audio state changes
+            audio.addEventListener('play', function() {
+                const icon = document.querySelector('#button-music i');
+                icon.classList.remove('fa-circle-play');
+                icon.classList.add('fa-circle-pause');
+            });
+
+            audio.addEventListener('pause', function() {
+                const icon = document.querySelector('#button-music i');
+                icon.classList.remove('fa-circle-pause');
+                icon.classList.add('fa-circle-play');
+            });
         });
     </script>
 </body>
