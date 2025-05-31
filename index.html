@@ -551,7 +551,7 @@
         </button>
 
         <!-- Audio Button -->
-        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3" aria-label="Change audio">
+        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3 d-none" data-offline-disabled="false" aria-label="Change audio">
             <i class="fa-solid fa-circle-pause spin-button"></i>
         </button>
     </div>
@@ -591,20 +591,27 @@
         </div>
     </div>
 
-    <!-- Add simple iOS audio enabler -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+    <!-- iOS Audio Support -->
+    <script type="module">
+        // Wait for system initialization
+        window.addEventListener('load', () => {
             // Enable audio for iOS
-            document.body.addEventListener('touchstart', function() {
-                const audio = document.querySelector('audio');
-                if (audio) {
-                    audio.play().then(function() {
+            const enableAudio = async () => {
+                try {
+                    const audio = document.querySelector('audio');
+                    if (audio) {
+                        await audio.play();
                         audio.pause();
-                    }).catch(function(error) {
-                        console.log("iOS audio initialization failed:", error);
-                    });
+                    }
+                } catch (err) {
+                    console.warn('iOS audio initialization:', err);
                 }
-            }, { once: true });
+            };
+
+            // Handle iOS audio initialization
+            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                document.addEventListener('touchstart', enableAudio, { once: true });
+            }
         });
     </script>
 </body>
