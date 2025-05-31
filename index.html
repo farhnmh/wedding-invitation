@@ -550,9 +550,9 @@
             <i class="fa-solid fa-circle-half-stroke"></i>
         </button>
 
-        <!-- Modify the music button -->
-        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3" onclick="playPause()" aria-label="Change audio">
-            <i class="fa-solid fa-circle-play spin-button"></i>
+        <!-- Audio Button -->
+        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3" aria-label="Change audio">
+            <i class="fa-solid fa-circle-pause spin-button"></i>
         </button>
     </div>
 
@@ -591,68 +591,20 @@
         </div>
     </div>
 
+    <!-- Add simple iOS audio enabler -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var song = document.getElementById("song");
-            var musicBtn = document.getElementById("button-music");
-            
-            // Remove any existing click handlers
-            musicBtn.outerHTML = musicBtn.outerHTML;
-            
-            // Re-get the button after replacing it
-            musicBtn = document.getElementById("button-music");
-            var icon = musicBtn.querySelector("i");
-
-            // Add our click handler
-            musicBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                if (song.paused) {
-                    song.play();
-                    icon.classList.remove("fa-circle-play");
-                    icon.classList.add("fa-circle-pause");
-                } else {
-                    song.pause();
-                    icon.classList.remove("fa-circle-pause");
-                    icon.classList.add("fa-circle-play");
+            // Enable audio for iOS
+            document.body.addEventListener('touchstart', function() {
+                const audio = document.querySelector('audio');
+                if (audio) {
+                    audio.play().then(function() {
+                        audio.pause();
+                    }).catch(function(error) {
+                        console.log("iOS audio initialization failed:", error);
+                    });
                 }
-            }, true);
-
-            // Play music when invitation is opened
-            var openBtn = document.querySelector('[onclick="undangan.guest.open(this)"]');
-            if (openBtn) {
-                openBtn.addEventListener('click', function() {
-                    setTimeout(function() {
-                        song.play().then(function() {
-                            icon.classList.remove("fa-circle-play");
-                            icon.classList.add("fa-circle-pause");
-                        }).catch(function(error) {
-                            console.log("Playback failed:", error);
-                        });
-                    }, 1000);
-                });
-            }
-
-            // Handle iOS touch to enable audio
-            document.addEventListener('touchstart', function() {
-                song.play().then(function() {
-                    song.pause();
-                }).catch(function(error) {
-                    console.log("iOS touch failed:", error);
-                });
             }, { once: true });
-
-            // Update icon state when audio state changes
-            song.addEventListener('play', function() {
-                icon.classList.remove("fa-circle-play");
-                icon.classList.add("fa-circle-pause");
-            });
-
-            song.addEventListener('pause', function() {
-                icon.classList.remove("fa-circle-pause");
-                icon.classList.add("fa-circle-play");
-            });
         });
     </script>
 </body>
