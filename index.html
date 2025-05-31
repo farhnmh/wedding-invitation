@@ -596,65 +596,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Audio handling -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const song = document.getElementById('song');
-            const button = document.getElementById('button-music');
-            
-            // Listen for the invitation open event
-            document.addEventListener('undangan.open', function() {
-                // Show and enable the button
-                button.classList.remove('d-none');
-                button.disabled = false;
-                
-                // Try to play music
-                setTimeout(() => {
-                    song.play().catch(console.error);
-                }, 1000);
-            });
-
-            // Enable audio on iOS
-            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                document.addEventListener('touchstart', function initAudio() {
-                    song.play().then(() => {
-                        song.pause();
-                        document.removeEventListener('touchstart', initAudio);
-                    }).catch(console.error);
-                }, { once: true });
-            }
-
-            // Handle music button clicks
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                if (!button.disabled) {
-                    if (song.paused) {
-                        song.play();
-                        button.querySelector('i').classList.remove('fa-circle-play');
-                        button.querySelector('i').classList.add('fa-circle-pause');
-                    } else {
-                        song.pause();
-                        button.querySelector('i').classList.remove('fa-circle-pause');
-                        button.querySelector('i').classList.add('fa-circle-play');
-                    }
-                }
-            });
-
-            // Handle page visibility
-            document.addEventListener('visibilitychange', function() {
-                if (!button.disabled) {
-                    if (document.hidden && !song.paused) {
-                        song.pause();
-                    } else if (!document.hidden && !song.paused) {
-                        song.play().catch(console.error);
-                    }
-                }
-            });
-        });
-    </script>
 </body>
 
 </html>

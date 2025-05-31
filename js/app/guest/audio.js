@@ -40,7 +40,8 @@ export const audio = (() => {
             music.innerHTML = statePlay;
         } catch (err) {
             isPlay = false;
-            alert(err);
+            music.disabled = false;
+            console.error('Audio play error:', err);
         }
     };
 
@@ -51,6 +52,20 @@ export const audio = (() => {
         isPlay = false;
         audioEl.pause();
         music.innerHTML = statePause;
+    };
+
+    /**
+     * Handle visibility change
+     * @returns {void}
+     */
+    const handleVisibilityChange = () => {
+        if (!music || music.disabled) return;
+        
+        if (document.hidden && isPlay) {
+            pause();
+        } else if (!document.hidden && isPlay) {
+            play().catch(console.error);
+        }
     };
 
     /**
@@ -65,6 +80,10 @@ export const audio = (() => {
         music = document.getElementById('button-music');
         document.addEventListener('undangan.open', () => {
             music.classList.remove('d-none');
+            music.disabled = false;
+            
+            // Try to play music after invitation opens
+            setTimeout(() => play(), 1000);
         });
 
         try {
@@ -79,14 +98,27 @@ export const audio = (() => {
             audioEl.autoplay = false;
             audioEl.controls = false;
 
+            // Enable audio on iOS
+            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                document.addEventListener('touchstart', function initAudio() {
+                    audioEl.play().then(() => {
+                        audioEl.pause();
+                        document.removeEventListener('touchstart', initAudio);
+                    }).catch(console.error);
+                }, { once: true });
+            }
+
             canPlay = new Promise((res) => audioEl.addEventListener('canplay', res));
+            
+            // Add event listeners
+            music.addEventListener('offline', pause);
+            music.addEventListener('click', () => isPlay ? pause() : play());
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            
             progress.complete('audio');
         } catch {
             progress.invalid('audio');
         }
-
-        music.addEventListener('offline', pause);
-        music.addEventListener('click', () => isPlay ? pause() : play());
     };
 
     return {
