@@ -88,7 +88,7 @@
 
 <body data-key="d650fd97d0716b495f0d83c5c3fb45bc2b1865e2821de4ef12" data-url="https://api.ulems.my.id/" data-audio="./assets/music/sound.mp3">
 
-    <!-- Add audio element at the start of body -->
+    <!-- Audio element -->
     <audio id="song" src="./assets/music/sound.mp3" type="audio/mp3" loop></audio>
 
     <!-- Root Invitation -->
@@ -551,7 +551,7 @@
         </button>
 
         <!-- Audio Button -->
-        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3 d-none" data-offline-disabled="false" aria-label="Change audio">
+        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3" data-offline-disabled="false" aria-label="Change audio">
             <i class="fa-solid fa-circle-pause spin-button"></i>
         </button>
     </div>
@@ -591,27 +591,60 @@
         </div>
     </div>
 
-    <!-- iOS Audio Support -->
-    <script type="module">
-        // Wait for system initialization
-        window.addEventListener('load', () => {
-            // Enable audio for iOS
-            const enableAudio = async () => {
-                try {
-                    const audio = document.querySelector('audio');
-                    if (audio) {
-                        await audio.play();
-                        audio.pause();
-                    }
-                } catch (err) {
-                    console.warn('iOS audio initialization:', err);
-                }
-            };
+    <!-- Audio handling -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const song = document.getElementById('song');
+            const button = document.getElementById('button-music');
+            let isPlaying = false;
 
-            // Handle iOS audio initialization
-            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                document.addEventListener('touchstart', enableAudio, { once: true });
+            // Function to handle play/pause
+            function toggleAudio() {
+                if (!song) return;
+                
+                if (song.paused) {
+                    song.play();
+                    isPlaying = true;
+                } else {
+                    song.pause();
+                    isPlaying = false;
+                }
             }
+
+            // Handle button click through event delegation
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('#button-music')) {
+                    toggleAudio();
+                }
+            });
+
+            // Play when invitation opens
+            document.querySelector('[onclick="undangan.guest.open(this)"]')
+                .addEventListener('click', function() {
+                    setTimeout(() => {
+                        song.play().catch(console.error);
+                        isPlaying = true;
+                    }, 1000);
+                });
+
+            // Enable audio on iOS
+            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                document.addEventListener('touchstart', function initAudio() {
+                    song.play().then(() => {
+                        song.pause();
+                        document.removeEventListener('touchstart', initAudio);
+                    }).catch(console.error);
+                }, { once: true });
+            }
+
+            // Handle page visibility
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden && isPlaying) {
+                    song.pause();
+                } else if (!document.hidden && isPlaying) {
+                    song.play().catch(console.error);
+                }
+            });
         });
     </script>
 </body>
