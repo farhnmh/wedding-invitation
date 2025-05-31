@@ -78,6 +78,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha256-ORBCb//WwUWwNh+EjsvO97snO3mAJ1+jhMzrlPBTYSQ=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js" integrity="sha256-pQBbLkFHcP1cy0C8IhoSdxlm0CtcH5yJ2ki9jjgR03c=" crossorigin="anonymous"></script>
     <script src="./dist/guest.js"></script>
+
+    <!-- Vercel Analytics -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 
 <!-- If not using comments, you can remove the data-key, data-url attributes, and ignore dashboard.html -->
@@ -596,40 +602,49 @@
         document.addEventListener('DOMContentLoaded', function() {
             const song = document.getElementById('song');
             const button = document.getElementById('button-music');
-            let isPlaying = false;
+            
+            // Make sure button is enabled
+            button.disabled = false;
 
-            // Function to handle play/pause
-            function toggleAudio() {
-                if (!song) return;
-                
+            // Initialize button state
+            function updateButtonState() {
                 if (song.paused) {
-                    song.play();
-                    isPlaying = true;
+                    button.querySelector('i').classList.remove('fa-circle-pause');
+                    button.querySelector('i').classList.add('fa-circle-play');
                 } else {
-                    song.pause();
-                    isPlaying = false;
+                    button.querySelector('i').classList.remove('fa-circle-play');
+                    button.querySelector('i').classList.add('fa-circle-pause');
                 }
             }
 
-            // Handle button click through event delegation
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('#button-music')) {
-                    toggleAudio();
+            // Handle button click
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (song.paused) {
+                    song.play();
+                } else {
+                    song.pause();
                 }
             });
 
+            // Update button on audio state change
+            song.addEventListener('play', updateButtonState);
+            song.addEventListener('pause', updateButtonState);
+
             // Play when invitation opens
-            document.querySelector('[onclick="undangan.guest.open(this)"]')
-                .addEventListener('click', function() {
+            const openBtn = document.querySelector('[onclick="undangan.guest.open(this)"]');
+            if (openBtn) {
+                openBtn.addEventListener('click', function() {
                     setTimeout(() => {
                         song.play().catch(console.error);
-                        isPlaying = true;
                     }, 1000);
                 });
+            }
 
             // Enable audio on iOS
             if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
                 document.addEventListener('touchstart', function initAudio() {
+                    button.disabled = false; // Ensure button is enabled
                     song.play().then(() => {
                         song.pause();
                         document.removeEventListener('touchstart', initAudio);
@@ -639,12 +654,15 @@
 
             // Handle page visibility
             document.addEventListener('visibilitychange', function() {
-                if (document.hidden && isPlaying) {
+                if (document.hidden && !song.paused) {
                     song.pause();
-                } else if (!document.hidden && isPlaying) {
+                } else if (!document.hidden && song.paused) {
                     song.play().catch(console.error);
                 }
             });
+
+            // Initial state
+            updateButtonState();
         });
     </script>
 </body>
