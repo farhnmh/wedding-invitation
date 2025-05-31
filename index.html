@@ -88,6 +88,9 @@
 
 <body data-key="d650fd97d0716b495f0d83c5c3fb45bc2b1865e2821de4ef12" data-url="https://api.ulems.my.id/" data-audio="./assets/music/sound.mp3">
 
+    <!-- Add audio element at the start of body -->
+    <audio id="song" src="./assets/music/sound.mp3" type="audio/mp3" loop></audio>
+
     <!-- Root Invitation -->
     <div class="position-relative w-100 min-vh-100 d-flex justify-content-center opacity-0" id="root" style="overflow-x:hidden;">
         <!-- Background (tetap ada, absolute) -->
@@ -547,9 +550,9 @@
             <i class="fa-solid fa-circle-half-stroke"></i>
         </button>
 
-        <!-- Audio Button -->
-        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3" onclick="toggleAudio(this)" aria-label="Change audio">
-            <i class="fa-solid fa-circle-pause spin-button"></i>
+        <!-- Modify the music button -->
+        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3" onclick="playPause()" aria-label="Change audio">
+            <i class="fa-solid fa-circle-play spin-button"></i>
         </button>
     </div>
 
@@ -697,6 +700,41 @@
                 icon.classList.add('fa-circle-play');
             });
         });
+
+        // Add simple audio controls
+        var song = document.getElementById("song");
+        var icon = document.querySelector("#button-music i");
+
+        // Simple play/pause function
+        function playPause() {
+            if (song.paused) {
+                song.play();
+                icon.classList.remove("fa-circle-play");
+                icon.classList.add("fa-circle-pause");
+            } else {
+                song.pause();
+                icon.classList.remove("fa-circle-pause");
+                icon.classList.add("fa-circle-play");
+            }
+        }
+
+        // Play music when invitation is opened
+        document.querySelector('[onclick="undangan.guest.open(this)"]').addEventListener('click', function() {
+            setTimeout(function() {
+                song.play().catch(function(error) {
+                    console.log("Playback failed:", error);
+                });
+            }, 1000);
+        });
+
+        // Handle iOS touch to enable audio
+        document.addEventListener('touchstart', function() {
+            song.play().then(function() {
+                song.pause();
+            }).catch(function(error) {
+                console.log("iOS touch failed:", error);
+            });
+        }, { once: true });
     </script>
 </body>
 
