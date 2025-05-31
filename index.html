@@ -557,7 +557,7 @@
         </button>
 
         <!-- Audio Button -->
-        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3" data-offline-disabled="false" aria-label="Change audio">
+        <button type="button" id="button-music" class="btn bg-light-dark border btn-sm rounded-circle btn-transparent shadow-sm mt-3 d-none" data-offline-disabled="false" aria-label="Change audio">
             <i class="fa-solid fa-circle-pause spin-button"></i>
         </button>
     </div>
@@ -603,48 +603,21 @@
             const song = document.getElementById('song');
             const button = document.getElementById('button-music');
             
-            // Make sure button is enabled
-            button.disabled = false;
-
-            // Initialize button state
-            function updateButtonState() {
-                if (song.paused) {
-                    button.querySelector('i').classList.remove('fa-circle-pause');
-                    button.querySelector('i').classList.add('fa-circle-play');
-                } else {
-                    button.querySelector('i').classList.remove('fa-circle-play');
-                    button.querySelector('i').classList.add('fa-circle-pause');
-                }
-            }
-
-            // Handle button click
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (song.paused) {
-                    song.play();
-                } else {
-                    song.pause();
-                }
+            // Listen for the invitation open event
+            document.addEventListener('undangan.open', function() {
+                // Show and enable the button
+                button.classList.remove('d-none');
+                button.disabled = false;
+                
+                // Try to play music
+                setTimeout(() => {
+                    song.play().catch(console.error);
+                }, 1000);
             });
-
-            // Update button on audio state change
-            song.addEventListener('play', updateButtonState);
-            song.addEventListener('pause', updateButtonState);
-
-            // Play when invitation opens
-            const openBtn = document.querySelector('[onclick="undangan.guest.open(this)"]');
-            if (openBtn) {
-                openBtn.addEventListener('click', function() {
-                    setTimeout(() => {
-                        song.play().catch(console.error);
-                    }, 1000);
-                });
-            }
 
             // Enable audio on iOS
             if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
                 document.addEventListener('touchstart', function initAudio() {
-                    button.disabled = false; // Ensure button is enabled
                     song.play().then(() => {
                         song.pause();
                         document.removeEventListener('touchstart', initAudio);
@@ -652,17 +625,34 @@
                 }, { once: true });
             }
 
-            // Handle page visibility
-            document.addEventListener('visibilitychange', function() {
-                if (document.hidden && !song.paused) {
-                    song.pause();
-                } else if (!document.hidden && song.paused) {
-                    song.play().catch(console.error);
+            // Handle music button clicks
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (!button.disabled) {
+                    if (song.paused) {
+                        song.play();
+                        button.querySelector('i').classList.remove('fa-circle-play');
+                        button.querySelector('i').classList.add('fa-circle-pause');
+                    } else {
+                        song.pause();
+                        button.querySelector('i').classList.remove('fa-circle-pause');
+                        button.querySelector('i').classList.add('fa-circle-play');
+                    }
                 }
             });
 
-            // Initial state
-            updateButtonState();
+            // Handle page visibility
+            document.addEventListener('visibilitychange', function() {
+                if (!button.disabled) {
+                    if (document.hidden && !song.paused) {
+                        song.pause();
+                    } else if (!document.hidden && !song.paused) {
+                        song.play().catch(console.error);
+                    }
+                }
+            });
         });
     </script>
 </body>
