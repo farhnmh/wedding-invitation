@@ -186,8 +186,8 @@ export const guest = (() => {
         const data = {
             action: 'TEMPLATE',
             text: 'The Wedding of Athallia and Farhan',
-            dates: `${formatDate('2025-06-10 18:00')}/${formatDate('2025-06-10 21:00')}`,
-            details: 'Tanpa mengurangi rasa hormat, kami mengundang Anda untuk berkenan menghadiri acara pernikahan kami. Terima kasih atas perhatian dan doa restu Anda, yang menjadi kebahagiaan serta kehormatan besar bagi kami.',
+            dates: `${formatDate('2025-06-27 14:00')}/${formatDate('2025-06-27 17:00')}`,
+            details: 'Tanpa mengurangi rasa hormat, kami mengundang Anda untuk berkenan menghadiri acara tasyakuran pernikahan kami. Terima kasih atas perhatian dan doa restu Anda, yang menjadi kebahagiaan serta kehormatan besar bagi kami.',
             location: 'https://goo.gl/maps/ALZR6FJZU3kxVwN86',
             ctz: 'Asia/Jakarta',
         };
